@@ -70,6 +70,24 @@ while validate_choice == "invalid":
 
 print(f"{user_choice} is a valid choice")
 
+print(dir_list[int(user_choice)])
+
+if int(user_choice) != 0:
+    df_all_specs = pd.read_csv('specifications.csv').set_index('Color')  # read all product specifications into a df
+    file_to_open = 'data/' + dir_list[int(user_choice)]
+    df = pd.read_csv(file_to_open)
+    # prod = dir_list[int(user_choice)].rstrip(".csv")  # assuming all file choices are CSV files
+    prod = os.path.splitext(dir_list[int(user_choice)])[0]  # splitting filename from extension 
+    df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]
+
+
+
+    print(df.describe())
+
+    print(df.head())
+    column_selection = list_files(df.columns)
+    print(column_selection)
+
 # while user_choice != 0:
 
 
