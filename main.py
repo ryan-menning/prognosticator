@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+import time
+import random
 
 
 def list_files(files):
@@ -42,6 +44,21 @@ def validate_int(user_input):
         print(f"'{user_choice}' is not an integer.")
         return "is_not_int"
 
+def file_message():
+    message1 = {1:'Great choice', 2:'Yes', 3:'Right away', 4:'Beep Boop Boop'}
+    message2 = {1:'Fetching', 2:'Opening', 3:'Gathering'}
+
+    mess1 = message1[random.randint(1,4)]
+    mess2 = message2[random.randint(1,3)]
+    return (mess1,mess2)
+
+def determine_ulimit_position(top_position):
+    if top_position == "Upper Limit":
+        return 0
+    else:
+        return 1
+
+
 dirs = sorted(os.listdir('data'))
 dir_list = list_files(dirs)  # returned dict of files in directory
 
@@ -70,23 +87,44 @@ while validate_choice == "invalid":
 
 print(f"{user_choice} is a valid choice")
 
-print(dir_list[int(user_choice)])
-
 if int(user_choice) != 0:
+    selected_file = dir_list[int(user_choice)]
+    fill_messages = file_message()
+    print(f"{fill_messages[0]}! {fill_messages[1]} {selected_file} now...")
+    time.sleep(3)  # pause execution for message
     df_all_specs = pd.read_csv('specifications.csv').set_index('Color')  # read all product specifications into a df
-    file_to_open = 'data/' + dir_list[int(user_choice)]
+    file_to_open = 'data/' + selected_file
     df = pd.read_csv(file_to_open)
     # prod = dir_list[int(user_choice)].rstrip(".csv")  # assuming all file choices are CSV files
-    prod = os.path.splitext(dir_list[int(user_choice)])[0]  # splitting filename from extension 
+    prod = os.path.splitext(selected_file)[0]  # separate filename from extension 
     df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]
+    ulimit = determine_ulimit_position(df_prod_specs.iloc[0,0])  # confirm "upper limit" position is above "lower limit"
+    if ulimit == 0:
+        df_ul_specs = df_prod_specs.iloc[0,:]
+        df_ll_specs = df_prod_specs.iloc[1,:]
+    else:
+        df_ul_specs = df_prod_specs.iloc[1,:]
+        df_ll_specs = df_prod_specs.iloc[0,:]
+    
+    
+    print()  # whitespace
+    print(f"The specifications for {prod} are below:")
+    print(df_prod_specs)
 
 
 
-    print(df.describe())
 
-    print(df.head())
-    column_selection = list_files(df.columns)
-    print(column_selection)
+
+
+
+
+
+
+    # print(df.describe())
+
+    # print(df.head())
+    # column_selection = list_files(df.columns)
+    # print(column_selection)
 
 # while user_choice != 0:
 
