@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import time
 import random
@@ -73,6 +74,29 @@ def get_target_columns(col_list, spec_keys):
             target_columns.append(col_list[i])
     return target_columns
 
+def create_spec_dict(spec_arr):
+    new_dict = {}
+    new_list = []
+    for i in range(len(spec_arr)):
+        new_list = [spec_arr[i][1],spec_arr[i][2]]
+        new_dict[spec_arr[i][0]] = new_list
+    return new_dict
+
+def combine_limits(targ_col,prod_spec_dict):  # This is making a big assumption that the lower limits are listed before upper limits in specifications file
+    prod_ll = []
+    prod_ul = []
+    prod_ll_dict = {}
+    prod_ul_dict = {}
+    for i in range(len(targ_col)):
+        key = targ_col[i]
+        prod_ll.append(prod_spec_dict[key][0])
+        prod_ul.append(prod_spec_dict[key][1])
+        
+    prod_ll_dict['lower_limits'] = prod_ll  # create dict of lower limits
+    prod_ul_dict['upper_limits'] = prod_ul  # create dict of upper limits
+    return {**prod_ll_dict, **prod_ul_dict}  # return dict of both dictionaries
+
+
 dirs = sorted(os.listdir('data'))
 dir_list = list_files(dirs)  # returned dict of files in directory
 
@@ -105,15 +129,28 @@ if int(user_choice) != 0:
     selected_file = dir_list[int(user_choice)]
     fill_messages = file_message()
     print(f"{fill_messages[0]}! {fill_messages[1]} {selected_file} now...")
-    time.sleep(3)  # pause execution for message
+    time.sleep(2)  # pause execution for message
     df_all_specs = pd.read_csv('specifications.csv').set_index('product')  # read all product specifications into a df
     file_to_open = 'data/' + selected_file
     df = pd.read_csv(file_to_open)
     # prod = dir_list[int(user_choice)].rstrip(".csv")  # assuming all file choices are CSV files
     prod = os.path.splitext(selected_file)[0]  # separate filename from extension 
     df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]  # filter specifications by product name from the selected file
+    prod_specs_arr = df_prod_specs.values  # create numpy array from product specifications df
     prod_target_keys = target_test_keys(df_prod_specs.values)  # creates a list of product test keys that are in specifications file
     target_columns = get_target_columns(df.columns, prod_target_keys)  # creates a list of column name values, from the selected file,  that match values in prod_target_keys list
+    prod_spec_dict = create_spec_dict(prod_specs_arr)  # creates a dict of prod test keys {key = test key: value = [lower limit value, upper limit value]}
+    prod_limits_dict = combine_limits(target_columns,prod_spec_dict) # create dict of all product limits {key = upper_limits or lower_limits: value = [all test key limits]}
+
+    # evaluate results in product file vs lower and upper limits in specifications file
+    test_values = df[target_columns].to_numpy(dtype=float)
+    lower_limits = np.array(prod_limits_dict['lower_limits'])
+    upper_limits = np.array(prod_limits_dict['upper_limits'])
+    is_below_ll = (np.less(test_values,lower_limits))  # array displays true if test value below lower spec limit
+    is_above_ul = (np.greater(test_values,upper_limits))  # array displays true if test value above upper spec limit
+    combined_arr = np.add(is_below_ll, is_above_ul)  # adds the two arrays 
+
+
 
     # *****this may not be needed***** If not remove function "determine_ulimit_position"
     ulimit = determine_ulimit_position(df_prod_specs.iloc[0,0])  # confirm "upper limit" position is above "lower limit" in dataframe
@@ -129,6 +166,8 @@ if int(user_choice) != 0:
     print(f"The specifications for {prod} are below:")
     print(prod_target_keys)
     print(target_columns)
+    print(prod_spec_dict)
+    print(prod_limits_dict)
 
 
     
