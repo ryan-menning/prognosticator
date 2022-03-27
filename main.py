@@ -58,6 +58,20 @@ def determine_ulimit_position(top_position):
     else:
         return 1
 
+def target_test_keys(keys): 
+    """Accepts a list of lists and returns a list of the first value from each list"""
+    
+    spec_keys = []
+    for i in range(len(keys)):
+        spec_keys.append(keys[i][0])
+    return spec_keys
+
+def get_target_columns(col_list, spec_keys):
+    target_columns = []
+    for i in range(len(col_list)):
+        if col_list[i] in spec_keys:
+            target_columns.append(col_list[i])
+    return target_columns
 
 dirs = sorted(os.listdir('data'))
 dir_list = list_files(dirs)  # returned dict of files in directory
@@ -92,30 +106,40 @@ if int(user_choice) != 0:
     fill_messages = file_message()
     print(f"{fill_messages[0]}! {fill_messages[1]} {selected_file} now...")
     time.sleep(3)  # pause execution for message
-    df_all_specs = pd.read_csv('specifications.csv').set_index('Color')  # read all product specifications into a df
+    df_all_specs = pd.read_csv('specifications.csv').set_index('product')  # read all product specifications into a df
     file_to_open = 'data/' + selected_file
     df = pd.read_csv(file_to_open)
     # prod = dir_list[int(user_choice)].rstrip(".csv")  # assuming all file choices are CSV files
     prod = os.path.splitext(selected_file)[0]  # separate filename from extension 
-    df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]
-    ulimit = determine_ulimit_position(df_prod_specs.iloc[0,0])  # confirm "upper limit" position is above "lower limit"
+    df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]  # filter specifications by product name from the selected file
+    prod_target_keys = target_test_keys(df_prod_specs.values)  # creates a list of product test keys that are in specifications file
+    target_columns = get_target_columns(df.columns, prod_target_keys)  # creates a list of column name values, from the selected file,  that match values in prod_target_keys list
+
+    # *****this may not be needed***** If not remove function "determine_ulimit_position"
+    ulimit = determine_ulimit_position(df_prod_specs.iloc[0,0])  # confirm "upper limit" position is above "lower limit" in dataframe
     if ulimit == 0:
         df_ul_specs = df_prod_specs.iloc[0,:]
         df_ll_specs = df_prod_specs.iloc[1,:]
     else:
         df_ul_specs = df_prod_specs.iloc[1,:]
         df_ll_specs = df_prod_specs.iloc[0,:]
-    
-    
+    # ****above this may not be needed****
+
     print()  # whitespace
     print(f"The specifications for {prod} are below:")
-    print(df_prod_specs)
+    print(prod_target_keys)
+    print(target_columns)
 
 
+    
+
+    
+    # column_selection = list_files(df.columns)
+    # print_dict(column_selection)
 
 
-
-
+    # print(df.head())
+    # print(new_df.head())
 
 
 
