@@ -164,7 +164,7 @@ if int(user_choice) != 0:
     print(f"The specifications for {prod} are:")
     print(spec_df)
     print()
-    print(f'{total_in_spec_rows} of the {total_df_rows} ({percent_good}) {prod} batches are within the {prod} specifications.')
+    print(f'{int(total_in_spec_rows)} of the {total_df_rows} ({percent_good}) {prod} batches are within the {prod} specifications.')
  
  
 
