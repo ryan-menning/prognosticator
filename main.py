@@ -114,11 +114,8 @@ while validate_choice == "invalid":
     else:
         validate_choice = check_dict(dir_list, int(user_choice)) # check to see if user input is a key in the dictionary
 
-    if user_choice == 0:
+    if int(user_choice) == 0:
         break
-    
-
-print(f"{user_choice} is a valid choice")
 
 if int(user_choice) != 0:
     selected_file = dir_list[int(user_choice)]
@@ -165,7 +162,44 @@ if int(user_choice) != 0:
     print(spec_df)
     print()
     print(f'{int(total_in_spec_rows)} of the {total_df_rows} ({percent_good}) {prod} batches are within the {prod} specifications.')
+    print()
  
- 
+    # chart display
+    test_key_opt_dict = list_files(target_columns)
+    print_dict(test_key_opt_dict)
+    user_choice = input('To see a histogram of test results enter the number of the corresponding test key. (0 to exit): ')
+    int_check = validate_int(user_choice)
+
+    if int(user_choice) != 0:
+        if int_check == "is_not_int":
+            validate_choice = "invalid"
+    
+        try:
+            #test_key_opt_dict[int(user_choice)]
+            validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
+        except KeyError:
+            validate_choice = "invalid"
+            
+        while validate_choice == "invalid":
+            error_message(user_choice)
+            print_dict(test_key_opt_dict)
+            user_choice = input('To see a histogram of test results enter the number of the corresponding test key. (0 to exit): ')
+            if int(user_choice) != 0:
+                int_check = validate_int(user_choice)
+                if int_check == "is_not_int":
+                    validate_choice = "invalid"
+                
+                try:
+                    #test_key_opt_dict[int(user_choice)]
+                    validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
+                except KeyError:
+                    validate_choice = "invalid"
+
+            if int(user_choice) == 0:
+                break
+
+    print(f"{user_choice} is valid")
+
+
 
     # print(df.describe())
