@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 import time
 import random
@@ -90,6 +92,18 @@ def combine_limits(targ_col,prod_spec_dict):  # This is making a big assumption 
     prod_ul_dict['upper_limits'] = prod_ul  # create dict of upper limits
     return {**prod_ll_dict, **prod_ul_dict}  # return dict of both dictionaries
 
+def create_histplot(test_key, limits, df, prod_name):
+    low_spec = limits[0]
+    upp_spec = limits[1]
+
+    plt.figure(figsize=(6,4))
+    sns.histplot(data=df[test_key], binwidth=0.2, kde=True, color='green')
+    plt.axvline(low_spec, 0, 1, color='red', label="LSL")  # lower limit reference line
+    plt.axvline(upp_spec, 0, 1, color='red', label="USL")  # upper limit reference line
+    plt.title(prod_name)
+    plt.legend()
+    plt.savefig(f"graph_output/{prod_name}_{test_key}.png", facecolor='w', edgecolor='w', orientation='portrait', transparent=False)
+
 
 # while choice 
 dirs = sorted(os.listdir('data'))
@@ -167,7 +181,7 @@ if int(user_choice) != 0:
     # chart display
     test_key_opt_dict = list_files(target_columns)
     print_dict(test_key_opt_dict)
-    user_choice = input('To see a histogram of test results enter the number of the corresponding test key. (0 to exit): ')
+    user_choice = input('To create a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
     int_check = validate_int(user_choice)
 
     if int(user_choice) != 0:
@@ -198,8 +212,13 @@ if int(user_choice) != 0:
             if int(user_choice) == 0:
                 break
 
-    print(f"{user_choice} is valid")
+    if int(user_choice) != 0:
+        print(f"{user_choice} is valid")
+        selected_test_key = test_key_opt_dict[int(user_choice)]
+        test_key_limits = prod_spec_dict[selected_test_key]
+        create_histplot(selected_test_key, test_key_limits, df, prod)
+    
 
 
 
-    # print(df.describe())
+   
