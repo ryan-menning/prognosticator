@@ -103,7 +103,7 @@ def create_histplot(test_key, limits, df, prod_name):
     plt.title(prod_name)
     plt.legend()
     plt.savefig(f"graph_output/{prod_name}_{test_key}.png", facecolor='w', edgecolor='w', orientation='portrait', transparent=False)
-
+    print(f"{prod_name}_{test_key}.png was successfully saved to the graph_output folder!")
 
 # while choice 
 dirs = sorted(os.listdir('data'))
@@ -189,7 +189,6 @@ if int(user_choice) != 0:
             validate_choice = "invalid"
     
         try:
-            #test_key_opt_dict[int(user_choice)]
             validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
         except KeyError:
             validate_choice = "invalid"
@@ -204,7 +203,6 @@ if int(user_choice) != 0:
                     validate_choice = "invalid"
                 
                 try:
-                    #test_key_opt_dict[int(user_choice)]
                     validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
                 except KeyError:
                     validate_choice = "invalid"
@@ -213,7 +211,6 @@ if int(user_choice) != 0:
                 break
 
     if int(user_choice) != 0:
-        print(f"{user_choice} is valid")
         selected_test_key = test_key_opt_dict[int(user_choice)]
         test_key_limits = prod_spec_dict[selected_test_key]
         create_histplot(selected_test_key, test_key_limits, df, prod)
