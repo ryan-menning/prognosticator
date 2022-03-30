@@ -105,117 +105,127 @@ def create_histplot(test_key, limits, df, prod_name):
     plt.savefig(f"graph_output/{prod_name}_{test_key}.png", facecolor='w', edgecolor='w', orientation='portrait', transparent=False)
     print(f"{prod_name}_{test_key}.png was successfully saved to the graph_output folder!")
 
-# while choice 
-dirs = sorted(os.listdir('data'))
-dir_list = list_files(dirs)  # returned dict of files in directory
 
-print_dict(dir_list)
-user_choice = input('Enter the number next to the file to open. (0 to exit): ')
+loop_main = "Y"
+while loop_main == "Y":
+    dirs = sorted(os.listdir('data'))
+    dir_list = list_files(dirs)  # returned dict of files in directory
 
-int_check = validate_int(user_choice)
-if int_check == "is_not_int":
-    validate_choice = "invalid"
-else:
-    validate_choice = check_dict(dir_list, int(user_choice)) # check to see if user input is a key in the dictionary
-
-while validate_choice == "invalid":
-    error_message(user_choice)
     print_dict(dir_list)
     user_choice = input('Enter the number next to the file to open. (0 to exit): ')
+
     int_check = validate_int(user_choice)
     if int_check == "is_not_int":
         validate_choice = "invalid"
     else:
         validate_choice = check_dict(dir_list, int(user_choice)) # check to see if user input is a key in the dictionary
 
-    if int(user_choice) == 0:
-        break
-
-if int(user_choice) != 0:
-    selected_file = dir_list[int(user_choice)]
-    fill_messages = file_message()
-    print(f"{fill_messages[0]}! {fill_messages[1]} {selected_file} now...")
-    time.sleep(2)  # pause execution for message
-    df_all_specs = pd.read_csv('specifications.csv').set_index('product')  # read all product specifications into a df
-    file_to_open = 'data/' + selected_file
-    df = pd.read_csv(file_to_open)
-    prod = os.path.splitext(selected_file)[0]  # separate filename from extension 
-    df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]  # filter specifications by product name from the selected file
-    prod_specs_arr = df_prod_specs.values  # create numpy array from product specifications df
-    prod_target_keys = target_test_keys(df_prod_specs.values)  # creates a list of product test keys that are in specifications file
-    target_columns = get_target_columns(df.columns, prod_target_keys)  # creates a list of column name values, from the selected file,  that match values in prod_target_keys list
-    prod_spec_dict = create_spec_dict(prod_specs_arr)  # creates a dict of prod test keys {key = test key: value = [lower limit value, upper limit value]}
-    prod_limits_dict = combine_limits(target_columns,prod_spec_dict) # create dict of all product limits {key = upper_limits or lower_limits: value = [all test key limits]}
-
-    # evaluate results in product file vs lower and upper limits in specifications file
-    test_values = df[target_columns].to_numpy(dtype=float)
-    lower_limits = np.array(prod_limits_dict['lower_limits'])
-    upper_limits = np.array(prod_limits_dict['upper_limits'])
-    is_below_ll = (np.less(test_values,lower_limits))  # array displays true if test value below lower spec limit
-    is_above_ul = (np.greater(test_values,upper_limits))  # array displays true if test value above upper spec limit
-    combined_arr = np.add(is_below_ll, is_above_ul)  # adds the two boolean arrays 
-    # create dataframe of the reverse boolean numpy array (using ~)
-    combined_df_in_spec = ~pd.DataFrame(data=combined_arr[0:,0:],
-                               index=(df['Lot'].values),  #  assuming "Lot" is a column name in selected product file
-                               columns=target_columns)
-
-    combined_df_in_spec['is_in_spec'] = combined_df_in_spec.prod(1)  # create column in df to show if all test results for a lot are within specifications
-    total_df_rows = combined_df_in_spec.shape[0]
-    total_in_spec_rows = combined_df_in_spec['is_in_spec'].sum()
-    percent_good = "{:.1%}".format(total_in_spec_rows/total_df_rows)
-    # rebuild specifications in dataframe to test keys show up in a predictable order
-    spec_df = pd.DataFrame(data=(lower_limits,upper_limits),
-                               index=['Lower Limits', 'Upper Limits'],
-                               columns=target_columns)
-
-    print()  # whitespace
-    print('Overview of file contents:')
-    print(df.head(5))
-    print()
-    print(f"The specifications for {prod} are:")
-    print(spec_df)
-    print()
-    print(f'{int(total_in_spec_rows)} of the {total_df_rows} ({percent_good}) {prod} batches are within the {prod} specifications.')
-    print()
- 
-    # chart display
-    test_key_opt_dict = list_files(target_columns)
-    print_dict(test_key_opt_dict)
-    user_choice = input('To create a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
-    int_check = validate_int(user_choice)
-
-    if int(user_choice) != 0:
+    while validate_choice == "invalid":
+        error_message(user_choice)
+        print_dict(dir_list)
+        user_choice = input('Enter the number next to the file to open. (0 to exit): ')
+        int_check = validate_int(user_choice)
         if int_check == "is_not_int":
             validate_choice = "invalid"
+        else:
+            validate_choice = check_dict(dir_list, int(user_choice)) # check to see if user input is a key in the dictionary
+
+        if int(user_choice) == 0:
+            break
+
+    if int(user_choice) == 0:  # break the main loop
+            break
+
+    if int(user_choice) != 0:
+        selected_file = dir_list[int(user_choice)]
+        fill_messages = file_message()
+        print(f"{fill_messages[0]}! {fill_messages[1]} {selected_file} now...")
+        time.sleep(2)  # pause execution for message
+        df_all_specs = pd.read_csv('specifications.csv').set_index('product')  # read all product specifications into a df
+        file_to_open = 'data/' + selected_file
+        df = pd.read_csv(file_to_open)
+        prod = os.path.splitext(selected_file)[0]  # separate filename from extension 
+        df_prod_specs = df_all_specs.iloc[lambda x: x.index == prod]  # filter specifications by product name from the selected file
+        prod_specs_arr = df_prod_specs.values  # create numpy array from product specifications df
+        prod_target_keys = target_test_keys(df_prod_specs.values)  # creates a list of product test keys that are in specifications file
+        target_columns = get_target_columns(df.columns, prod_target_keys)  # creates a list of column name values, from the selected file,  that match values in prod_target_keys list
+        prod_spec_dict = create_spec_dict(prod_specs_arr)  # creates a dict of prod test keys {key = test key: value = [lower limit value, upper limit value]}
+        prod_limits_dict = combine_limits(target_columns,prod_spec_dict) # create dict of all product limits {key = upper_limits or lower_limits: value = [all test key limits]}
+
+        # evaluate results in product file vs lower and upper limits in specifications file
+        test_values = df[target_columns].to_numpy(dtype=float)
+        lower_limits = np.array(prod_limits_dict['lower_limits'])
+        upper_limits = np.array(prod_limits_dict['upper_limits'])
+        is_below_ll = (np.less(test_values,lower_limits))  # array displays true if test value below lower spec limit
+        is_above_ul = (np.greater(test_values,upper_limits))  # array displays true if test value above upper spec limit
+        combined_arr = np.add(is_below_ll, is_above_ul)  # adds the two boolean arrays 
+        # create dataframe of the reverse boolean numpy array (using ~)
+        combined_df_in_spec = ~pd.DataFrame(data=combined_arr[0:,0:],
+                                index=(df['Lot'].values),  #  assuming "Lot" is a column name in selected product file
+                                columns=target_columns)
+
+        combined_df_in_spec['is_in_spec'] = combined_df_in_spec.prod(1)  # create column in df to show if all test results for a lot are within specifications
+        total_df_rows = combined_df_in_spec.shape[0]
+        total_in_spec_rows = combined_df_in_spec['is_in_spec'].sum()
+        percent_good = "{:.1%}".format(total_in_spec_rows/total_df_rows)
+        # rebuild specifications in dataframe to test keys show up in a predictable order
+        spec_df = pd.DataFrame(data=(lower_limits,upper_limits),
+                                index=['Lower Limits', 'Upper Limits'],
+                                columns=target_columns)
+
+        print()  # whitespace
+        print('Overview of file contents:')
+        print(df.head(5))
+        print()
+        print(f"The specifications for {prod} are:")
+        print(spec_df)
+        print()
+        print(f'{int(total_in_spec_rows)} of the {total_df_rows} ({percent_good}) {prod} batches are within the {prod} specifications.')
+        print()
     
-        try:
-            validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
-        except KeyError:
-            validate_choice = "invalid"
-            
-        while validate_choice == "invalid":
-            error_message(user_choice)
-            print_dict(test_key_opt_dict)
-            user_choice = input('To see a histogram of test results enter the number of the corresponding test key. (0 to exit): ')
+        # chart display
+        test_key_opt_dict = list_files(target_columns)
+        print_dict(test_key_opt_dict)
+        user_choice = input('To create a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
+        loop_graph = "Y"
+        while loop_graph == "Y".upper():
+            int_check = validate_int(user_choice)
+
             if int(user_choice) != 0:
-                int_check = validate_int(user_choice)
                 if int_check == "is_not_int":
                     validate_choice = "invalid"
-                
+
                 try:
                     validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
                 except KeyError:
                     validate_choice = "invalid"
+                    
+                while validate_choice == "invalid":
+                    error_message(user_choice)
+                    print_dict(test_key_opt_dict)
+                    user_choice = input('To see a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
+                    if int(user_choice) != 0:
+                        int_check = validate_int(user_choice)
+                        if int_check == "is_not_int":
+                            validate_choice = "invalid"
+                        
+                        try:
+                            validate_choice = check_dict(prod_spec_dict, test_key_opt_dict[int(user_choice)]) # check to see if user input is a key in the dictionary
+                        except KeyError:
+                            validate_choice = "invalid"
+
+                    if int(user_choice) == 0:
+                        break
+
+            if int(user_choice) != 0:
+                selected_test_key = test_key_opt_dict[int(user_choice)]
+                test_key_limits = prod_spec_dict[selected_test_key]
+                create_histplot(selected_test_key, test_key_limits, df, prod)
 
             if int(user_choice) == 0:
-                break
-
-    if int(user_choice) != 0:
-        selected_test_key = test_key_opt_dict[int(user_choice)]
-        test_key_limits = prod_spec_dict[selected_test_key]
-        create_histplot(selected_test_key, test_key_limits, df, prod)
-    
-
-
-
-   
+                loop_graph = "N"
+            else:
+                user_choice = input("To create another histogram enter another number. (0 to exit): ")
+                loop_graph = "Y"
+        
+        loop_main = input("Would you like to open another file? (Enter Y to continue or any other key to exit): ").upper()
