@@ -168,7 +168,7 @@ while loop_main == "Y":
         total_df_rows = combined_df_in_spec.shape[0]
         total_in_spec_rows = combined_df_in_spec['is_in_spec'].sum()
         percent_good = "{:.1%}".format(total_in_spec_rows/total_df_rows)
-        # rebuild specifications in dataframe to test keys show up in a predictable order
+        # rebuild specifications in dataframe so test keys show up in a predictable order
         spec_df = pd.DataFrame(data=(lower_limits,upper_limits),
                                 index=['Lower Limits', 'Upper Limits'],
                                 columns=target_columns)
@@ -187,6 +187,7 @@ while loop_main == "Y":
         test_key_opt_dict = list_files(target_columns)
         print_dict(test_key_opt_dict)
         user_choice = input('To create a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
+        print()
         loop_graph = "Y"
         while loop_graph == "Y".upper():
             int_check = validate_int(user_choice)
@@ -204,6 +205,7 @@ while loop_main == "Y":
                     error_message(user_choice)
                     print_dict(test_key_opt_dict)
                     user_choice = input('To see a histogram of test results enter the number of the corresponding test key above. (0 to exit): ')
+                    print()
                     if int(user_choice) != 0:
                         int_check = validate_int(user_choice)
                         if int_check == "is_not_int":
@@ -229,3 +231,4 @@ while loop_main == "Y":
                 loop_graph = "Y"
         
         loop_main = input("Would you like to open another file? (Enter Y to continue or any other key to exit): ").upper()
+        print()
